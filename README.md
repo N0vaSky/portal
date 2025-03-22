@@ -1,4 +1,4 @@
-# Fibratus Management Portal
+# Fibratus Management Portal (Concept...)
 
 A centralized management system for Fibratus nodes, providing node monitoring, rule management, alert collection, network isolation, and remote remediation capabilities.
 
