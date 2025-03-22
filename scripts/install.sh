@@ -295,7 +295,6 @@ main() {
     
     # Check prerequisites
     check_root
-    check_ubuntu
     
     # Collect installation parameters
     read -p "Enter admin username [admin]: " ADMIN_USER
