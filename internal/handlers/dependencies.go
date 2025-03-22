@@ -12,6 +12,7 @@ import (
 	"github.com/N0vaSky/portal/internal/api/handlers/node"
 	"github.com/N0vaSky/portal/internal/api/handlers/rule"
 	"github.com/N0vaSky/portal/internal/api/handlers/user"
+	"github.com/N0vaSky/portal/internal/api/handlers/websocket"
 	"github.com/N0vaSky/portal/internal/config"
 	"github.com/N0vaSky/portal/internal/services/alerts"
 	"github.com/N0vaSky/portal/internal/services/auth/jwt"
@@ -23,22 +24,24 @@ import (
 	"github.com/N0vaSky/portal/internal/services/remediation"
 	"github.com/N0vaSky/portal/internal/services/rules"
 	"github.com/N0vaSky/portal/internal/services/users"
+	wsService "github.com/N0vaSky/portal/internal/services/websocket"
 	"github.com/jmoiron/sqlx"
 )
 
 // HandlerDependencies holds all the handlers used by the API
 type HandlerDependencies struct {
-	NodeHandler    *node.Handler
-	RuleHandler    *rule.Handler
-	AlertHandler   *alert.Handler
-	LogHandler     *log.Handler
-	CommandHandler *command.Handler
-	ConfigHandler  *config.Handler
-	UserHandler    *user.Handler
-	AuthHandler    *auth.Handler
-	APIKeyHandler  *apikey.Handler
-	AuditHandler   *audit.Handler
-	AgentHandler   *agent.Handler
+	NodeHandler      *node.Handler
+	RuleHandler      *rule.Handler
+	AlertHandler     *alert.Handler
+	LogHandler       *log.Handler
+	CommandHandler   *command.Handler
+	ConfigHandler    *config.Handler
+	UserHandler      *user.Handler
+	AuthHandler      *auth.Handler
+	APIKeyHandler    *apikey.Handler
+	AuditHandler     *audit.Handler
+	AgentHandler     *agent.Handler
+	WebSocketHandler *websocket.Handler
 }
 
 // NewHandlerDependencies creates a new instance of HandlerDependencies
@@ -54,19 +57,21 @@ func NewHandlerDependencies(cfg *config.Config, db *sqlx.DB) *HandlerDependencie
 	jwtService := jwt.NewService(cfg.Auth.JWTSecret)
 	mfaService := mfa.NewService()
 	isolationService := isolation.NewService(db)
+	websocketService := wsService.NewService(db, nodeService)
 
 	// Initialize handlers
 	return &HandlerDependencies{
-		NodeHandler:    node.NewHandler(nodeService, isolationService),
-		RuleHandler:    rule.NewHandler(ruleService),
-		AlertHandler:   alert.NewHandler(alertService),
-		LogHandler:     log.NewHandler(logService),
-		CommandHandler: command.NewHandler(remediationService),
-		ConfigHandler:  config.NewHandler(configService),
-		UserHandler:    user.NewHandler(userService),
-		AuthHandler:    auth.NewHandler(userService, jwtService, mfaService, cfg),
-		APIKeyHandler:  apikey.NewHandler(db),
-		AuditHandler:   audit.NewHandler(db),
-		AgentHandler:   agent.NewHandler(nodeService, ruleService, alertService, remediationService, configService),
+		NodeHandler:      node.NewHandler(nodeService, isolationService),
+		RuleHandler:      rule.NewHandler(ruleService),
+		AlertHandler:     alert.NewHandler(alertService),
+		LogHandler:       log.NewHandler(logService),
+		CommandHandler:   command.NewHandler(remediationService),
+		ConfigHandler:    config.Handler(configService),
+		UserHandler:      user.NewHandler(userService),
+		AuthHandler:      auth.NewHandler(userService, jwtService, mfaService, cfg),
+		APIKeyHandler:    apikey.NewHandler(db),
+		AuditHandler:     audit.NewHandler(db),
+		AgentHandler:     agent.NewHandler(nodeService, ruleService, alertService, remediationService, configService),
+		WebSocketHandler: websocket.NewHandler(websocketService),
 	}
 }
