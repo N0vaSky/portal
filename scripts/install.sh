@@ -34,19 +34,7 @@ check_root() {
     fi
 }
 
-# Function to check Ubuntu version
-check_ubuntu() {
-    if ! grep -q "Ubuntu" /etc/os-release; then
-        print_error "This script is designed for Ubuntu only"
-        exit 1
-    fi
-    
-    VERSION=$(grep -oP '(?<=VERSION_ID=")[^"]+' /etc/os-release)
-    if [ "${VERSION}" != "20.04" ] && [ "${VERSION}" != "22.04" ]; then
-        print_error "This script requires Ubuntu 20.04 or 22.04"
-        exit 1
-    fi
-}
+
 
 # Function to install dependencies
 install_dependencies() {
