@@ -1,4 +1,4 @@
-module github.com/N0vaSky/portal/
+module github.com/N0vaSky/portal
 
 go 1.19
 
