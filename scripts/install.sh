@@ -42,7 +42,14 @@ install_dependencies() {
     apt-get update
 
     print_status "Installing dependencies..."
+# Check Ubuntu version
+if grep -q "noble" /etc/os-release; then
+    # Ubuntu 24.04 - Use golang available in repos
+    apt-get install -y postgresql postgresql-contrib certbot nginx golang python3-certbot-nginx
+else
+    # Ubuntu 20.04/22.04
     apt-get install -y postgresql postgresql-contrib certbot nginx golang-1.19 python3-certbot-nginx
+fi
 
     # Set Go environment variables
     export PATH=$PATH:/usr/lib/go-1.19/bin
