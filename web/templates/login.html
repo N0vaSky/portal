@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibratus Portal - Login</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Fibratus Portal</h1>
+                <p class="text-gray-600 mt-2">Centralized management for Fibratus nodes</p>
+            </div>
+
+            <div id="login-form">
+                <form id="login" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="username" name="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+
+                    <div id="otp-field" class="hidden">
+                        <label for="otp" class="block text-sm font-medium text-gray-700">Authentication Code</label>
+                        <input type="text" id="otp" name="otp" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="6-digit code">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Sign in
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="mfa-setup" class="hidden space-y-6">
+                <div class="text-center">
+                    <h2 class="text-xl font-semibold text-gray-800">Set Up Two-Factor Authentication</h2>
+                    <p class="text-gray-600 mt-2">Scan the QR code with your authenticator app</p>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div id="qrcode"></div>
+                </div>
+                
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Or enter this code manually:</p>
+                    <div id="mfa-secret" class="font-mono text-center bg-gray-100 p-2 rounded">XXXXXXXXXXXXXXXX</div>
+                </div>
+
+                <div>
+                    <label for="verify-otp" class="block text-sm font-medium text-gray-700">Verification Code</label>
+                    <input type="text" id="verify-otp" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="6-digit code">
+                </div>
+
+                <div>
+                    <button id="verify-mfa" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Verify
+                    </button>
+                </div>
+            </div>
+
+            <div id="error-message" class="hidden mt-4 p-4 bg-red-100 text-red-700 rounded-md"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/static/js/login.js"></script>
+</body>
+</html>

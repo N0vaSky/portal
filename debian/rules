@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+export PATH := /usr/lib/go-1.19/bin:$(PATH)
+export GOROOT := /usr/lib/go-1.19
+export GOCACHE := $(CURDIR)/.cache
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	rm -rf $(CURDIR)/.cache
+	rm -f $(CURDIR)/fibratus-server
+
+override_dh_auto_build:
+	# Build the server binary
+	go build -o fibratus-server ./cmd/server
+
+override_dh_auto_install:
+	# Install server binary
+	install -D -m 0755 $(CURDIR)/fibratus-server $(DESTDIR)/usr/bin/fibratus-server
+	
+	# Install configuration files
+	install -d $(DESTDIR)/etc/fibratus/migrations
+	install -d $(DESTDIR)/etc/fibratus/rules
+	install -m 0644 $(CURDIR)/migrations/*.sql $(DESTDIR)/etc/fibratus/migrations/
+	
+	# Install web files
+	install -d $(DESTDIR)/usr/share/fibratus/web/static/css
+	install -d $(DESTDIR)/usr/share/fibratus/web/static/js
+	install -d $(DESTDIR)/usr/share/fibratus/web/templates
+	install -m 0644 $(CURDIR)/web/templates/*.html $(DESTDIR)/usr/share/fibratus/web/templates/
+	install -m 0644 $(CURDIR)/web/static/css/*.css $(DESTDIR)/usr/share/fibratus/web/static/css/
+	install -m 0644 $(CURDIR)/web/static/js/*.js $(DESTDIR)/usr/share/fibratus/web/static/js/
+	
+	# Install systemd service
+	install -D -m 0644 $(CURDIR)/debian/fibratus-portal.service $(DESTDIR)/lib/systemd/system/fibratus-portal.service
+	
+	# Install NGINX configuration
+	install -D -m 0644 $(CURDIR)/debian/fibratus-portal.nginx $(DESTDIR)/etc/nginx/sites-available/fibratus-portal
+	
+	# Install scripts
+	install -D -m 0755 $(CURDIR)/scripts/install.sh $(DESTDIR)/usr/share/fibratus/scripts/install.sh
+	
+	# Create data directory
+	install -d $(DESTDIR)/var/lib/fibratus

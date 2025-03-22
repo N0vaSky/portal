@@ -1,0 +1,23 @@
+[Unit]
+Description=Fibratus Management Portal
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=fibratus
+Group=fibratus
+ExecStart=/usr/bin/fibratus-server -config /etc/fibratus/server.yaml
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
+# Security hardening
+ProtectSystem=full
+PrivateTmp=true
+NoNewPrivileges=true
+PrivateDevices=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

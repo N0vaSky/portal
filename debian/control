@@ -1,0 +1,15 @@
+Source: fibratus-portal
+Section: admin
+Priority: optional
+Maintainer: Fibratus Team <admin@fibratus.io>
+Build-Depends: debhelper (>= 11)
+Standards-Version: 4.5.0
+Homepage: https://fibratus.io
+
+Package: fibratus-portal
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, postgresql (>= 11), nginx, certbot, golang-1.19
+Description: Fibratus Management Portal
+ Centralized management system for Fibratus nodes.
+ Provides node monitoring, rule management, alert collection,
+ network isolation, and remote remediation capabilities.
