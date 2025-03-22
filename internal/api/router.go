@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fibratus/portal/internal/api/handlers"
-	"github.com/fibratus/portal/internal/api/middleware"
-	"github.com/fibratus/portal/internal/config"
+	"github.com/N0vaSky/portal/internal/api/handlers"
+	"github.com/N0vaSky/portal/internal/api/handlers/websocket"
+	"github.com/N0vaSky/portal/internal/api/middleware"
+	"github.com/N0vaSky/portal/internal/config"
+	"github.com/N0vaSky/portal/internal/services/websocket"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/cors"
@@ -109,6 +111,11 @@ func NewRouter(cfg *config.Config, db *sqlx.DB) http.Handler {
 	// Audit log
 	protectedRouter.HandleFunc("/audit-log", deps.AuditHandler.ListAuditLog).Methods("GET")
 
+	// WebSocket management
+	protectedRouter.HandleFunc("/websocket/stats", deps.WebSocketHandler.GetStats).Methods("GET")
+	protectedRouter.HandleFunc("/websocket/command", deps.WebSocketHandler.SendCommand).Methods("POST")
+	protectedRouter.HandleFunc("/websocket/isolate/{hostname}", deps.WebSocketHandler.IsolateNode).Methods("POST")
+
 	// Agent API (used by the Fibratus agents)
 	agentRouter := router.PathPrefix("/agent").Subrouter()
 	agentRouter.Use(middleware.APIKeyAuth(db))
@@ -119,6 +126,9 @@ func NewRouter(cfg *config.Config, db *sqlx.DB) http.Handler {
 	agentRouter.HandleFunc("/alerts", deps.AgentHandler.SubmitAlert).Methods("POST")
 	agentRouter.HandleFunc("/commands", deps.AgentHandler.GetPendingCommands).Methods("GET")
 	agentRouter.HandleFunc("/commands/{id}/result", deps.AgentHandler.SubmitCommandResult).Methods("POST")
+	
+	// WebSocket endpoint for agents
+	agentRouter.HandleFunc("/ws", deps.WebSocketHandler.HandleAgentConnection)
 
 	// Serve static files for web interface
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("/usr/share/fibratus/web")))
