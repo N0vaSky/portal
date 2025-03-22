@@ -1,146 +1,113 @@
 # Fibratus Management Portal (Concept...)
 
-A centralized management system for Fibratus nodes, providing Windows endpoint monitoring, rule management, alert collection, network isolation, and remote remediation capabilities.
+A centralized management portal for existing Fibratus installations, providing enterprise-wide visibility, control, and orchestration of Fibratus agents.
 
-## Features
+## Portal Overview
 
-- **Centralized Windows Node Management**: Real-time view of all Windows endpoints with status indicators
-- **Immediate Network Isolation**: Instantly isolate compromised Windows systems with no delay
-- **Rule Management**: Centralized rule repository with version control
-- **Alert Collection**: Centralized alert dashboard and management
-- **Remote Remediation**: Execute commands on Windows nodes for incident response
-- **Windows Event Log Collection**: Collect and analyze Windows event logs
-- **Process Investigation**: Query and visualize Windows process information
-- **Configuration Management**: Distribute configurations to Windows nodes
+The Fibratus Management Portal extends the capabilities of the existing Fibratus agent ecosystem by adding:
 
-## Portal-Agent Communication Architecture
+- **Centralized Management**: Monitor and manage all Fibratus agents across your enterprise
+- **Enterprise-Wide Rules Management**: Centrally deploy and manage detection rules
+- **Alert Aggregation**: Collect and analyze alerts from all endpoints in one place
+- **Remote Network Isolation**: Instantly isolate compromised endpoints while maintaining management capability
+- **Remote Remediation**: Execute commands on endpoints for incident response
+- **Advanced Analytics**: Cross-endpoint correlation and threat hunting
 
-The Fibratus Management Portal employs a hybrid communication model designed specifically for Windows environments, with special emphasis on immediate response to critical security commands.
+## Fibratus Agent Integration
 
-### Dual-Channel Communication Model
+This portal is designed to integrate with existing Fibratus agents which already provide:
 
-The portal and Windows agents use a **dual-channel communication system**:
+- Real-time ETW kernel event monitoring
+- Behavior-driven YAML rule engine
+- YARA memory scanning
+- Event shipping to various sinks
+- Forensics capabilities
+- Windows Event Log integration
+- Python-based extensibility via filaments
 
-1. **Real-time Command Channel** (for immediate actions):
-   - Persistent WebSocket connection maintained by agents
-   - Enables immediate command delivery from portal to agents
-   - Priority channel for isolation and critical security commands
-   - Zero-delay response to critical incidents
+### Integration Architecture
 
-2. **Standard HTTP Channel** (for routine operations):
-   - Used for regular agent operations (heartbeats, data collection)
-   - Periodic polling for non-critical commands
-   - Data transmission for logs, alerts, and status updates
+The portal introduces an enterprise management layer that sits above the existing Fibratus infrastructure:
 
-3. **Agent Authentication**:
-   - Both channels secured with TLS and API key authentication
-   - WebSocket connections maintain persistent authentication
-   - HTTP requests include API key in Authorization header
+1. **Agent Communication Extension**:
+   - Adds WebSocket capability to Fibratus for real-time command and control
+   - Maintains backward compatibility with existing Fibratus functionality
+   - Provides secure, authenticated communication channel
 
-### Isolation Command Workflow
+2. **Immediate Isolation Capability**:
+   - Leverages Fibratus' existing system access to implement immediate network isolation
+   - Uses Windows Filtering Platform (WFP) APIs for rapid firewall rule deployment
+   - Maintains communication channel to management portal during isolation
 
-When an incident responder initiates isolation through the portal UI:
+3. **Centralized Rule Management**:
+   - Distributes YAML rules to all managed Fibratus instances
+   - Supports different rule sets for different endpoint groups
+   - Provides version control and rule testing capabilities
 
-1. **Immediate Dispatch**:
-   - Portal instantly sends isolation command through WebSocket channel
-   - Command marked as highest priority
-   - Delivery confirmation required from agent
+4. **Enterprise-Wide Alerting**:
+   - Aggregates alerts from all endpoints in real-time
+   - Provides advanced filtering and correlation
+   - Supports integration with SOC workflows and SIEM systems
 
-2. **Agent Response**:
-   - Agent receives command immediately via WebSocket
-   - Executes isolation procedures with no polling delay
-   - Responds with acknowledgment within milliseconds
-   - Implements isolation before any potential malware can react
+## Required Agent Extensions
 
-3. **Execution Confirmation**:
-   - Agent implements Windows Firewall isolation immediately
-   - Sends confirmation of successful isolation
-   - Portal updates UI to show "Isolated" status in real-time
+To integrate with the Management Portal, existing Fibratus agents require the following extensions:
 
-4. **Failsafe Mechanism**:
-   - If WebSocket channel fails, command is also queued in HTTP channel
-   - Agent will receive command on next HTTP poll (backup mechanism)
-   - Portal alerts admins if immediate isolation cannot be confirmed
+### Communication Module
 
-### Real-Time Status Monitoring
+A new Fibratus module that enables:
 
-The WebSocket channel provides these additional benefits:
+1. **Real-time Command Channel**:
+   - WebSocket connection to the portal
+   - Secure TLS with certificate validation
+   - API key-based authentication
+   - Immediate command reception and execution
 
-1. **Instant Status Updates**:
-   - Agents report critical status changes in real-time
-   - Portal displays accurate node status without polling delays
+2. **Status Reporting**:
+   - Regular heartbeats to portal
+   - System information collection
+   - Agent configuration reporting
+   - Rule deployment status feedback
 
-2. **Bi-directional Communication**:
-   - Portal can query agents for immediate information
-   - Agents can push critical alerts without waiting for next poll cycle
+### Network Isolation Module
 
-3. **Connection Health Monitoring**:
-   - WebSocket heartbeats verify connection is alive
-   - Automatic reconnection with exponential backoff
-   - Portal tracks agent connectivity status in real-time
+An extension that enables:
 
-## Windows Agent Requirements
+1. **Immediate Isolation Capability**:
+   - Windows Firewall rule implementation
+   - IPsec policy configuration
+   - Selective connectivity to management portal
+   - Verification of isolation effectiveness
 
-Windows agents must implement these key capabilities to support immediate isolation:
+2. **Isolation Management**:
+   - Status reporting of isolation state
+   - Rule persistence across reboots
+   - Safe de-isolation procedures
+   - Isolation logging and verification
 
-### Communication Implementation
+### Remote Command Module
 
-1. **WebSocket Client**:
-   - Maintain persistent WebSocket connection to portal
-   - Implement automatic reconnection if connection drops
-   - Handle TLS certificate validation
-   - Process commands received through WebSocket immediately
+A new module that processes commands from the portal:
 
-2. **Windows Service Operation**:
-   - Run as a Windows service with automatic startup
-   - Run with SYSTEM privileges for full system access
-   - Implement service recovery options for reliability
-   - Handle Windows updates and reboots while maintaining connection
+1. **Command Processing**:
+   - Secure command validation and execution
+   - Privilege management for system operations
+   - Result reporting with detailed status
+   - Command auditing and logging
 
-3. **Command Prioritization**:
-   - Process isolation commands with highest priority
-   - Interrupt any non-critical operations to handle isolation commands
-   - Implement command queueing with priority levels
+2. **Remediation Actions**:
+   - File system operations
+   - Process management
+   - Registry operations
+   - System configuration changes
 
-### Network Isolation Capabilities
+## Portal-Agent Communication
 
-1. **Instant Windows Firewall Control**:
-   - Immediate implementation of Windows Firewall rules
-   - Use Windows Filtering Platform (WFP) APIs for instant rule application
-   - Support for complex filtering scenarios
-   - Maintain detailed logging of firewall changes
+The communication between the portal and agents follows this model:
 
-2. **IPsec Implementation**:
-   - Configure IPsec policies through Windows API
-   - Create secure tunnels back to management server
-   - Implement connection security rules
+### Real-time Command Channel
 
-3. **Selective Connectivity During Isolation**:
-   - Maintain WebSocket connection to portal during isolation
-   - Allow DNS resolution if specified
-   - Block all other inbound/outbound traffic
-   - Support for custom allow-list of emergency connections
-
-### Windows System Integration
-
-1. **Windows Event Log Integration**:
-   - Subscribe to Windows event logs
-   - Forward security events in real-time via WebSocket
-   - Support batch collection via HTTP channel
-
-2. **ETW (Event Tracing for Windows) Integration**:
-   - Consume ETW events from security providers
-   - Process and analyze ETW data
-   - Generate alerts based on suspicious patterns
-
-3. **Registry and File System Monitoring**:
-   - Real-time monitoring of critical registry keys
-   - File system activity monitoring
-   - Instant alerting on suspicious changes
-
-## Immediate Isolation Implementation Details
-
-The isolation command delivered via WebSocket has this structure:
+For immediate actions (isolation, critical commands):
 
 ```json
 {
@@ -157,7 +124,7 @@ The isolation command delivered via WebSocket has this structure:
 }
 ```
 
-Agent acknowledgment is immediate:
+Agent acknowledgment:
 
 ```json
 {
@@ -167,7 +134,7 @@ Agent acknowledgment is immediate:
 }
 ```
 
-Followed quickly by execution confirmation:
+Execution confirmation:
 
 ```json
 {
@@ -184,90 +151,84 @@ Followed quickly by execution confirmation:
 }
 ```
 
-## Standard Command Implementation
+### Rule Distribution Channel
 
-Agents must also implement handlers for these Windows-specific command categories:
-
-### File Commands
+The portal distributes rules to agents:
 
 ```json
 {
-  "command": "remove-file",
-  "id": "cmd-12346",
-  "details": {
-    "path": "C:\\malware\\suspicious.exe",
-    "force": true
+  "operation": "update_rules",
+  "rules": [
+    {
+      "name": "credential_dumping_vaultcmd",
+      "content": "rule credential_dumping_vaultcmd {\n  meta:\n    author = \"Fibratus Team\"\n    ...",
+      "version": 2,
+      "checksum": "sha256:8a7b3ab6..."
+    }
+  ]
+}
+```
+
+### Alert Collection
+
+Agents forward alerts to the portal:
+
+```json
+{
+  "alert": {
+    "rule_name": "credential_dumping_vaultcmd",
+    "severity": "high",
+    "process": {
+      "name": "vaultcmd.exe",
+      "pid": 4567,
+      "command_line": "VaultCmd.exe /listcreds:\"Windows Credentials\" /all"
+    },
+    "timestamp": "2025-03-22T14:25:32.561Z",
+    "details": {
+      "technique_id": "T1003.005",
+      "tactic": "credential-access"
+    }
   }
 }
 ```
 
-### Windows Registry Commands
+## Integration Implementation
 
-```json
-{
-  "command": "revert-registry-key",
-  "id": "cmd-12347",
-  "details": {
-    "key_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-    "backup_file": "run_keys_backup.reg"
-  }
-}
-```
+To integrate with the portal, the following components need to be added to Fibratus:
 
-### Windows Process Commands
+1. **Agent Extension Package**:
+   - WebSocket client implementation
+   - Command processing module
+   - Network isolation capabilities
+   - Remote command execution framework
 
-```json
-{
-  "command": "kill-process",
-  "id": "cmd-12348",
-  "details": {
-    "pid": 1234,
-    "force": true
-  }
-}
-```
+2. **Configuration Updates**:
+   - Portal connection parameters
+   - API key storage and management
+   - WebSocket settings
+   - Command authorization controls
 
-### Windows Event Log Collection Commands
+3. **Installation Updates**:
+   - Portal registration during agent installation
+   - API key provisioning
+   - Initial configuration setup
+   - Testing connectivity to portal
 
-```json
-{
-  "command": "collect-windows-logs",
-  "id": "cmd-12349",
-  "details": {
-    "log_type": "Security",
-    "start_time": "2025-03-20T00:00:00Z",
-    "end_time": "2025-03-22T23:59:59Z",
-    "event_ids": [4624, 4625],
-    "max_events": 1000
-  }
-}
-```
+## Deployment Architecture
 
-## Windows Agent Implementation Guidance
+The complete Fibratus Management solution consists of:
 
-1. **Real-Time Response Architecture**:
-   - Design agent with non-blocking async architecture
-   - Use Windows I/O completion ports for efficiency
-   - Implement command queue with priority processing
-   - Ensure WebSocket channel has highest priority
+1. **Management Portal Server**:
+   - Central web application for management
+   - API endpoints for agent communication
+   - Database for configuration and alert storage
+   - WebSocket server for real-time communication
 
-2. **Windows Security Considerations**:
-   - Run with SYSTEM privileges for immediate firewall control
-   - Use Windows DPAPI for secure storage of credentials
-   - Verify command authenticity before execution
-   - Implement secure logging of all critical actions
-
-3. **Isolation Reliability**:
-   - Test isolation under various network conditions
-   - Verify isolation persists after system reboots
-   - Ensure agent can still communicate with portal post-isolation
-   - Implement periodic verification that isolation is still effective
-
-4. **Performance Optimization**:
-   - Minimize WebSocket overhead
-   - Optimize Windows Firewall rule application
-   - Balance between real-time monitoring and system performance
-   - Implement intelligent throttling during user activity
+2. **Extended Fibratus Agents**:
+   - Standard Fibratus functionality
+   - Portal integration extensions
+   - WebSocket client for real-time communication
+   - Isolation and remediation capabilities
 
 ## Tech Stack
 
@@ -275,7 +236,7 @@ Agents must also implement handlers for these Windows-specific command categorie
 - **Portal Frontend**: HTML, CSS, JavaScript
 - **Database**: PostgreSQL
 - **Web Server**: Nginx
-- **Agent Platform**: Windows (agent implementation not included in this repository)
+- **Agent Extensions**: C/C++ and Python (compatible with existing Fibratus)
 - **Real-time Communication**: WebSockets with TLS
 
 ## Getting Started
@@ -329,6 +290,7 @@ fibratus-portal/
 - [Deployment Guide](DEPLOYMENT.md): Instructions for deploying the portal
 - [API Documentation](docs/api.md): API reference
 - [User Guide](docs/user-guide.md): End-user documentation
+- [Integration Guide](docs/integration.md): How to extend Fibratus agents for portal integration
 
 ## Contributing
 
